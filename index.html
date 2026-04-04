@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>El Interruptor de la Obsesión — Quiz de Relación</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --rose:       #8B1A4A;
+    --rose-mid:   #B02860;
+    --blush:      #D4617A;
+    --light-blush:#F9E4EC;
+    --ultra-blush:#FDF0F5;
+    --gold:       #C9A84C;
+    --gold-light: #F5E9C8;
+    --dark:       #1A0A10;
+    --mid:        #4A2535;
+    --text:       #2D1520;
+    --muted:      #8A6070;
+    --white:      #FFFFFF;
+    --cream:      #FDF8F5;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND ── */
+  .bg-layer {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 60% at 20% 10%, #5A0A28 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 90%, #3A0818 0%, transparent 55%),
+                linear-gradient(160deg, #1A0A10 0%, #2D0F1A 50%, #150508 100%);
+  }
+  .bg-layer::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(201,168,76,.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .floating-petal {
+    position: fixed; pointer-events: none; z-index: 1;
+    font-size: 1.4rem; opacity: 0.07;
+    animation: floatPetal 18s linear infinite;
+  }
+  @keyframes floatPetal {
+    0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.07; }
+    90%  { opacity: 0.07; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* ── WRAPPER ── */
+  .wrapper {
+    position: relative; z-index: 2;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem 1.2rem;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--cream);
+    border-radius: 24px;
+    width: 100%; max-width: 640px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(201,168,76,.15);
+  }
+  .card-header {
+    background: linear-gradient(135deg, var(--rose) 0%, #6B1038 100%);
+    padding: 2rem 2.2rem 1.6rem;
+    position: relative; overflow: hidden;
+  }
+  .card-header::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: rgba(255,255,255,.04);
+  }
+  .card-header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .72rem; font-weight: 600; letter-spacing: 3px;
+    color: rgba(201,168,76,.8); text-transform: uppercase;
+    margin-bottom: .7rem;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    font-weight: 700; color: var(--white); line-height: 1.25;
+    margin-bottom: .5rem;
+  }
+  .header-sub {
+    font-size: .88rem; color: rgba(255,214,229,.75); line-height: 1.5;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    padding: 1.2rem 2.2rem .8rem;
+    background: var(--white);
+    border-bottom: 1px solid rgba(139,26,74,.08);
+  }
+  .progress-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: .55rem;
+  }
+  .progress-label {
+    font-size: .78rem; font-weight: 600; color: var(--blush);
+    letter-spacing: .5px;
+  }
+  .progress-count { font-size: .78rem; color: var(--muted); }
+  .progress-bar-bg {
+    height: 6px; background: var(--light-blush); border-radius: 99px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--rose), var(--blush), var(--gold));
+    transition: width .55s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── BODY ── */
+  .card-body { padding: 2rem 2.2rem 2.4rem; }
+
+  /* ── SCREEN TRANSITIONS ── */
+  .screen { display: none; animation: fadeUp .45s ease both; }
+  .screen.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── QUESTION ── */
+  .q-number {
+    font-size: .72rem; font-weight: 700; letter-spacing: 2px;
+    color: var(--blush); text-transform: uppercase; margin-bottom: .6rem;
+  }
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 3vw, 1.35rem);
+    font-weight: 700; color: var(--rose);
+    line-height: 1.4; margin-bottom: 1.6rem;
+  }
+  .q-sub {
+    font-size: .88rem; color: var(--muted);
+    margin-top: -.9rem; margin-bottom: 1.4rem;
+    font-style: italic; line-height: 1.5;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: .7rem; }
+  .option {
+    display: flex; align-items: flex-start; gap: .9rem;
+    padding: 1rem 1.2rem;
+    border: 1.5px solid rgba(139,26,74,.15);
+    border-radius: 14px;
+    background: var(--white);
+    cursor: pointer;
+    transition: all .22s ease;
+    position: relative; overflow: hidden;
+  }
+  .option::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--ultra-blush), transparent);
+    opacity: 0; transition: opacity .22s;
+  }
+  .option:hover { border-color: var(--blush); transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(139,26,74,.1); }
+  .option:hover::before { opacity: 1; }
+  .option.selected {
+    border-color: var(--rose);
+    background: var(--light-blush);
+    box-shadow: 0 4px 20px rgba(139,26,74,.15);
+  }
+  .option.selected::before { opacity: 1; }
+  .opt-letter {
+    flex-shrink: 0;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--light-blush);
+    border: 1.5px solid rgba(139,26,74,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700; color: var(--rose);
+    transition: all .22s; position: relative; z-index: 1;
+  }
+  .option.selected .opt-letter {
+    background: var(--rose); color: var(--white); border-color: var(--rose);
+  }
+  .opt-text {
+    font-size: .93rem; line-height: 1.5; color: var(--text);
+    position: relative; z-index: 1; padding-top: .15rem;
+  }
+
+  /* ── BTN ── */
+  .btn {
+    display: block; width: 100%;
+    padding: 1rem 1.5rem;
+    border: none; border-radius: 14px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 700; letter-spacing: .3px;
+    transition: all .25s ease; position: relative; overflow: hidden;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--rose) 0%, #6B1038 100%);
+    color: var(--white);
+    box-shadow: 0 6px 24px rgba(139,26,74,.4);
+    margin-top: 1.6rem;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(139,26,74,.5);
+  }
+  .btn-primary:disabled {
+    opacity: .45; cursor: not-allowed; transform: none;
+    box-shadow: none;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.12), transparent);
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold) 0%, #A07830 100%);
+    color: var(--white);
+    box-shadow: 0 6px 24px rgba(201,168,76,.4);
+    font-size: 1.05rem;
+    padding: 1.1rem 1.5rem;
+  }
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(201,168,76,.5);
+  }
+
+  /* ── INTRO SCREEN ── */
+  .intro-icon { font-size: 3rem; text-align: center; margin-bottom: 1rem; }
+  .intro-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    font-weight: 900; color: var(--rose);
+    text-align: center; line-height: 1.3; margin-bottom: .8rem;
+  }
+  .intro-sub {
+    font-size: .93rem; color: var(--muted); text-align: center;
+    line-height: 1.6; margin-bottom: 1.6rem;
+  }
+  .trust-row {
+    display: flex; justify-content: center; gap: 1.5rem;
+    margin-bottom: 1.6rem; flex-wrap: wrap;
+  }
+  .trust-item {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .78rem; font-weight: 600; color: var(--muted);
+  }
+  .trust-item span:first-child { font-size: 1rem; }
+
+  /* ── LOADING ── */
+  .loading-wrap { text-align: center; padding: 1rem 0 .5rem; }
+  .loading-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 700; color: var(--rose);
+    margin-bottom: .5rem;
+  }
+  .loading-sub { font-size: .88rem; color: var(--muted); margin-bottom: 1.8rem; }
+  .dots { display: flex; justify-content: center; gap: .5rem; margin-bottom: 1.8rem; }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--blush); animation: pulse .9s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: .2s; }
+  .dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes pulse {
+    0%,100% { transform: scale(.7); opacity: .4; }
+    50%      { transform: scale(1.2); opacity: 1; }
+  }
+  .analysis-item {
+    display: flex; align-items: center; gap: .8rem;
+    padding: .6rem 0; border-bottom: 1px solid rgba(139,26,74,.08);
+    font-size: .9rem; color: var(--muted);
+  }
+  .analysis-item .icon { font-size: 1rem; }
+  .analysis-item.done { color: var(--rose); font-weight: 500; }
+
+  /* ── RESULT ── */
+  .result-hero {
+    background: linear-gradient(135deg, var(--rose) 0%, #6B1038 100%);
+    margin: -2rem -2.2rem 1.8rem;
+    padding: 1.8rem 2.2rem;
+    position: relative; overflow: hidden;
+  }
+  .result-hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .result-eyebrow {
+    font-size: .7rem; font-weight: 700; letter-spacing: 3px;
+    color: rgba(201,168,76,.9); text-transform: uppercase;
+    margin-bottom: .5rem;
+  }
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.15rem, 3.5vw, 1.5rem);
+    font-weight: 700; color: var(--white); line-height: 1.3;
+    margin-bottom: .4rem;
+  }
+  .result-tag {
+    display: inline-block;
+    background: rgba(201,168,76,.2); border: 1px solid rgba(201,168,76,.4);
+    color: var(--gold); font-size: .75rem; font-weight: 600;
+    padding: .25rem .75rem; border-radius: 99px; letter-spacing: .5px;
+  }
+
+  .insight-card {
+    background: var(--white);
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: .9rem;
+    border-left: 4px solid var(--rose);
+    box-shadow: 0 2px 12px rgba(139,26,74,.06);
+  }
+  .insight-card.gold { border-left-color: var(--gold); }
+  .insight-card.blush { border-left-color: var(--blush); }
+  .insight-label {
+    font-size: .68rem; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--blush);
+    margin-bottom: .35rem;
+  }
+  .insight-card.gold .insight-label { color: var(--gold); }
+  .insight-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem; font-weight: 700; color: var(--rose);
+    margin-bottom: .4rem;
+  }
+  .insight-card.gold .insight-name { color: #8A6020; }
+  .insight-text { font-size: .88rem; color: var(--muted); line-height: 1.55; }
+
+  .offer-box {
+    background: linear-gradient(135deg, var(--ultra-blush), var(--gold-light));
+    border: 1.5px solid rgba(201,168,76,.3);
+    border-radius: 16px; padding: 1.4rem 1.6rem;
+    margin-bottom: 1.2rem; text-align: center;
+  }
+  .offer-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 700; color: var(--rose);
+    line-height: 1.35; margin-bottom: .5rem;
+  }
+  .offer-sub { font-size: .85rem; color: var(--muted); line-height: 1.5; margin-bottom: .9rem; }
+  .price-row { display: flex; align-items: center; justify-content: center; gap: .8rem; margin-bottom: .5rem; }
+  .price-old { font-size: .95rem; color: var(--muted); text-decoration: line-through; }
+  .price-new {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 900; color: var(--rose);
+  }
+  .price-label { font-size: .75rem; color: var(--muted); }
+  .guarantee { font-size: .75rem; color: var(--muted); text-align: center; margin-top: .8rem; }
+
+  /* ── FOOTER ── */
+  .card-footer {
+    background: var(--white); padding: .9rem 2.2rem;
+    border-top: 1px solid rgba(139,26,74,.08);
+    display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;
+  }
+  .footer-item {
+    display: flex; align-items: center; gap: .35rem;
+    font-size: .73rem; color: var(--muted);
+  }
+  .footer-item span:first-child { color: var(--blush); }
+
+  /* ── URGENCY BANNER ── */
+  .urgency-banner {
+    background: linear-gradient(135deg, #7B1040, #5A0A28);
+    border-radius: 10px;
+    padding: .6rem 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    border: 1px solid rgba(201,168,76,.2);
+  }
+  .urgency-text {
+    font-size: .8rem;
+    color: rgba(255,214,229,.9);
+    font-weight: 500;
+  }
+  .urgency-text strong {
+    color: var(--gold);
+  }
+
+  /* ── SOCIAL PROOF ── */
+  .social-proof {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    justify-content: center;
+    margin-bottom: .8rem;
+  }
+  .avatars {
+    display: flex;
+  }
+  .avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid var(--white);
+    margin-left: -6px;
+    font-size: .65rem;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: var(--white);
+  }
+  .avatar:first-child { margin-left: 0; }
+  .av1 { background: #B02860; }
+  .av2 { background: #C9A84C; }
+  .av3 { background: #8B1A4A; }
+  .av4 { background: #D4617A; }
+  .social-text { font-size: .76rem; color: var(--muted); }
+  .social-text strong { color: var(--rose); }
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="floating-petal" style="left:8%;animation-delay:0s">🌹</div>
+<div class="floating-petal" style="left:22%;animation-delay:4s">✦</div>
+<div class="floating-petal" style="left:55%;animation-delay:8s">🌹</div>
+<div class="floating-petal" style="left:78%;animation-delay:12s">✦</div>
+<div class="floating-petal" style="left:90%;animation-delay:2s">🌹</div>
+
+<div class="wrapper">
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="card-header">
+    <div class="eyebrow">✦ Análisis de Relación Personalizado ✦</div>
+    <div class="header-title">El Interruptor de la Obsesión</div>
+    <div class="header-sub">Descubre qué gatillo psicológico está bloqueado en tu relación — y exactamente cómo activarlo esta semana.</div>
+  </div>
+
+  <!-- PROGRESS (hidden on intro) -->
+  <div class="progress-wrap" id="progressWrap" style="display:none">
+    <div class="progress-meta">
+      <span class="progress-label">Tu Análisis</span>
+      <span class="progress-count" id="progressCount">1 de 7</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar" style="width:14%"></div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="card-body">
+
+    <!-- ── INTRO ── -->
+    <div class="screen active" id="screen-intro">
+      <div class="intro-icon">🌹</div>
+      <div class="intro-title">¿Por qué él no elige comprometerse — aunque las cosas van bien?</div>
+      <div class="intro-sub">
+        Hay 7 gatillos psicológicos que determinan si un hombre se obsesiona contigo o se aleja lentamente. Este quiz de 2 minutos identifica exactamente cuál está bloqueado en tu situación — y qué hacer esta semana.
+      </div>
+
+      <div class="trust-row">
+        <div class="trust-item"><span>🧠</span><span>Basado en psicología real</span></div>
+        <div class="trust-item"><span>🔒</span><span>100% privado</span></div>
+        <div class="trust-item"><span>⚡</span><span>2 minutos</span></div>
+      </div>
+
+      <div class="social-proof">
+        <div class="avatars">
+          <div class="avatar av1">M</div>
+          <div class="avatar av2">S</div>
+          <div class="avatar av3">V</div>
+          <div class="avatar av4">L</div>
+        </div>
+        <div class="social-text"><strong>+3.000 mujeres</strong> ya descubrieron su perfil</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="startQuiz()">
+        Comenzar mi análisis gratuito →
+      </button>
+    </div>
+
+    <!-- Q1 -->
+    <div class="screen" id="screen-1">
+      <div class="q-number">Pregunta 1 de 7</div>
+      <div class="q-text">Cuando él no da señales por un rato, ¿qué haces normalmente?</div>
+      <div class="options" data-q="1">
+        <div class="option" data-val="A" onclick="selectOption(this,1)">
+          <div class="opt-letter">A</div>
+          <div class="opt-text">Espero — confío en que él va a comunicarse cuando pueda.</div>
+        </div>
+        <div class="option" data-val="B" onclick="selectOption(this,1)">
+          <div class="opt-letter">B</div>
+          <div class="opt-text">Le mando un mensaje casual después de unos días para saber cómo está.</div>
+        </div>
+        <div class="option" data-val="C" onclick="selectOption(this,1)">
+          <div class="opt-letter">C</div>
+          <div class="opt-text">Le escribo rápido — el silencio me pone ansiosa.</div>
+        </div>
+        <div class="option" data-val="D" onclick="selectOption(this,1)">
+          <div class="opt-letter">D</div>
+          <div class="opt-text">Me mantengo ocupada y honestamente no lo noto.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-1" disabled onclick="nextQuestion(2)">Continuar →</button>
+    </div>
+
+    <!-- Q2 -->
+    <div class="screen" id="screen-2">
+      <div class="q-number">Pregunta 2 de 7</div>
+      <div class="q-text">¿Cómo describirías su comportamiento cuando tú empiezas a alejarte un poco?</div>
+      <div class="options" data-q="2">
+        <div class="option" data-val="A" onclick="selectOption(this,2)">
+          <div class="opt-letter">A</div>
+          <div class="opt-text">Busca más — lo nota de inmediato.</div>
+        </div>
+        <div class="option" data-val="B" onclick="selectOption(this,2)">
+          <div class="opt-letter">B</div>
+          <div class="opt-text">Parece aliviado — como si él también necesitara el espacio.</div>
+        </div>
+        <div class="option" data-val="C" onclick="selectOption(this,2)">
+          <div class="opt-letter">C</div>
+          <div class="opt-text">Es impredecible — a veces busca, a veces desaparece.</div>
+        </div>
+        <div class="option" data-val="D" onclick="selectOption(this,2)">
+          <div class="opt-letter">D</div>
+          <div class="opt-text">Realmente no me he alejado lo suficiente como para saberlo.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-2" disabled onclick="nextQuestion(3)">Continuar →</button>
+    </div>
+
+    <!-- Q3 -->
+    <div class="screen" id="screen-3">
+      <div class="q-number">Pregunta 3 de 7</div>
+      <div class="q-text">Cuando le pides su ayuda u opinión sobre algo, ¿cómo responde él?</div>
+      <div class="q-sub">Piensa en momentos reales y específicos.</div>
+      <div class="options" data-q="3">
+        <div class="option" data-val="A" onclick="selectOption(this,3)">
+          <div class="opt-letter">A</div>
+          <div class="opt-text">Se anima — le encanta estar involucrado y que le pregunten.</div>
+        </div>
+        <div class="option" data-val="B" onclick="selectOption(this,3)">
+          <div class="opt-letter">B</div>
+          <div class="opt-text">Ayuda pero no hace gran cosa de ello.</div>
+        </div>
+        <div class="option" data-val="C" onclick="selectOption(this,3)">
+          <div class="opt-letter">C</div>
+          <div class="opt-text">Rara vez le pido ayuda — prefiero manejar las cosas sola.</div>
+        </div>
+        <div class="option" data-val="D" onclick="selectOption(this,3)">
+          <div class="opt-letter">D</div>
+          <div class="opt-text">Parece desconectado o da un esfuerzo mínimo cuando le pido algo.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-3" disabled onclick="nextQuestion(4)">Continuar →</button>
+    </div>
+
+    <!-- Q4 -->
+    <div class="screen" id="screen-4">
+      <div class="q-number">Pregunta 4 de 7</div>
+      <div class="q-text">¿Cómo describirías honestamente tu vida fuera de esta relación ahora mismo?</div>
+      <div class="options" data-q="4">
+        <div class="option" data-val="A" onclick="selectOption(this,4)">
+          <div class="opt-letter">A</div>
+          <div class="opt-text">Plena y satisfactoria — tengo mi propio mundo que florece de forma independiente.</div>
+        </div>
+        <div class="option" data-val="B" onclick="selectOption(this,4)">
+          <div class="opt-letter">B</div>
+          <div class="opt-text">Bastante bien, aunque esta relación consume mucha de mi energía.</div>
+        </div>
+        <div class="option" data-val="C" onclick="selectOption(this,4)">
+          <div class="opt-letter">C</div>
+          <div class="opt-text">Honestamente he dejado que las cosas se deslicen — he estado enfocada en esto.</div>
+        </div>
+        <div class="option" data-val="D" onclick="selectOption(this,4)">
+          <div class="opt-letter">D</div>
+          <div class="opt-text">Siento que estoy esperando a que esto se resuelva para poder vivir plenamente.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-4" disabled onclick="nextQuestion(5)">Continuar →</button>
+    </div>
+
+    <!-- Q5 -->
+    <div class="screen" id="screen-5">
+      <div class="q-number">Pregunta 5 de 7</div>
+      <div class="q-text">Cuando piensas en sus recuerdos emocionales más profundos juntos, ¿qué encuentras?</div>
+      <div class="options" data-q="5">
+        <div class="option" data-val="A" onclick="selectOption(this,5)">
+          <div class="opt-letter">A</div>
+          <div class="opt-text">Varios momentos vívidos y específicos que se sienten como puntos de referencia.</div>
+        </div>
+        <div class="option" data-val="B" onclick="selectOption(this,5)">
+          <div class="opt-letter">B</div>
+          <div class="opt-text">Uno o dos buenos recuerdos pero nada que realmente destaque.</div>
+        </div>
+        <div class="option" data-val="C" onclick="selectOption(this,5)">
+          <div class="opt-letter">C</div>
+          <div class="opt-text">Mayormente superficial — no hemos tenido muchas conversaciones profundas.</div>
+        </div>
+        <div class="option" data-val="D" onclick="selectOption(this,5)">
+          <div class="opt-letter">D</div>
+          <div class="opt-text">La conexión emocional se siente de un solo lado — yo siento más que él.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-5" disabled onclick="nextQuestion(6)">Continuar →</button>
+    </div>
+
+    <!-- Q6 -->
+    <div class="screen" id="screen-6">
+      <div class="q-number">Pregunta 6 de 7</div>
+      <div class="q-text">¿Cómo responde él cuando surge el tema del futuro?</div>
+      <div class="q-sub">Sé honesta — aunque sea incómodo.</div>
+      <div class="options" data-q="6">
+        <div class="option" data-val="A" onclick="selectOption(this,6)">
+          <div class="opt-letter">A</div>
+          <div class="opt-text">A veces lo menciona él mismo — parece imaginarnos juntos.</div>
+        </div>
+        <div class="option" data-val="B" onclick="selectOption(this,6)">
+          <div class="opt-letter">B</div>
+          <div class="opt-text">Es neutral — no lo resiste pero tampoco lo inicia.</div>
+        </div>
+        <div class="option" data-val="C" onclick="selectOption(this,6)">
+          <div class="opt-letter">C</div>
+          <div class="opt-text">Se incomoda o cambia el tema.</div>
+        </div>
+        <div class="option" data-val="D" onclick="selectOption(this,6)">
+          <div class="opt-letter">D</div>
+          <div class="opt-text">Evito mencionarlo porque tengo miedo de su reacción.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-6" disabled onclick="nextQuestion(7)">Continuar →</button>
+    </div>
+
+    <!-- Q7 -->
+    <div class="screen" id="screen-7">
+      <div class="q-number">Pregunta 7 de 7</div>
+      <div class="q-text">¿Qué es lo que más quieres sentir en esta relación — que aún no sientes del todo?</div>
+      <div class="options" data-q="7">
+        <div class="option" data-val="hero" onclick="selectOption(this,7)">
+          <div class="opt-letter">A</div>
+          <div class="opt-text">Quiero sentirme genuinamente elegida — como si fuera su prioridad.</div>
+        </div>
+        <div class="option" data-val="anchor" onclick="selectOption(this,7)">
+          <div class="opt-letter">B</div>
+          <div class="opt-text">Quiero sentir una conexión emocional más profunda — intimidad real.</div>
+        </div>
+        <div class="option" data-val="scarcity" onclick="selectOption(this,7)">
+          <div class="opt-letter">C</div>
+          <div class="opt-text">Quiero sentirme segura y confiada — no ansiosa por perderlo.</div>
+        </div>
+        <div class="option" data-val="vision" onclick="selectOption(this,7)">
+          <div class="opt-letter">D</div>
+          <div class="opt-text">Quiero sentir que estamos construyendo algo real juntos.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-7" disabled onclick="showLoading()">Ver mis resultados →</button>
+    </div>
+
+    <!-- ── LOADING ── -->
+    <div class="screen" id="screen-loading">
+      <div class="loading-wrap">
+        <div class="loading-title">Analizando tus respuestas...</div>
+        <div class="loading-sub">Construyendo tu perfil de relación personalizado.</div>
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div id="analysisItems">
+          <div class="analysis-item" id="ai1"><span class="icon">🧠</span> Mapeando tu perfil de relación...</div>
+          <div class="analysis-item" id="ai2"><span class="icon">🔍</span> Identificando tu gatillo bloqueado...</div>
+          <div class="analysis-item" id="ai3"><span class="icon">💡</span> Leyendo sus patrones de apego...</div>
+          <div class="analysis-item" id="ai4"><span class="icon">✦</span> Preparando tus resultados personalizados...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RESULT ── -->
+    <div class="screen" id="screen-result">
+      <div class="result-hero">
+        <div class="result-eyebrow">✦ Tu Análisis Personal ✦</div>
+        <div class="result-title" id="result-title">Tu Resultado</div>
+        <div class="result-tag" id="result-tag">Perfil</div>
+      </div>
+
+      <div id="insight-trigger" class="insight-card">
+        <div class="insight-label">🔴 Gatillo Bloqueado</div>
+        <div class="insight-name" id="trigger-name"></div>
+        <div class="insight-text" id="trigger-text"></div>
+      </div>
+
+      <div id="insight-profile" class="insight-card blush">
+        <div class="insight-label">💗 Tu Perfil de Relación</div>
+        <div class="insight-name" id="profile-name"></div>
+        <div class="insight-text" id="profile-text"></div>
+      </div>
+
+      <div id="insight-his" class="insight-card gold">
+        <div class="insight-label">🧩 Su Patrón de Apego</div>
+        <div class="insight-name" id="his-name"></div>
+        <div class="insight-text" id="his-text"></div>
+      </div>
+
+      <div class="urgency-banner">
+        <div class="urgency-text">⏰ Oferta especial disponible por tiempo limitado — <strong>precio normal $37</strong></div>
+      </div>
+
+      <div class="offer-box">
+        <div class="offer-headline">El Interruptor de la Obsesión aborda<br/>exactamente tu situación — los 7 gatillos.</div>
+        <div class="offer-sub">Una guía de 25 páginas que te da el mapa completo: qué decir, cómo mostrarte, y exactamente cómo activar el interruptor en el hombre específico que deseas.</div>
+        <div class="price-row">
+          <span class="price-old">$37</span>
+          <span class="price-new">$9</span>
+        </div>
+        <div class="price-label">Pago único · Descarga instantánea · 100% privado</div>
+      </div>
+
+      <button class="btn btn-gold" onclick="goToCheckout()">
+        Sí — Quiero El Interruptor de la Obsesión por $9 →
+      </button>
+      <div class="guarantee">🔒 Garantía de 30 días sin preguntas · Acceso inmediato</div>
+    </div>
+
+  </div><!-- /card-body -->
+
+  <!-- FOOTER -->
+  <div class="card-footer" id="cardFooter">
+    <div class="footer-item"><span>🔒</span><span>Privado y Seguro</span></div>
+    <div class="footer-item"><span>✦</span><span>Dra. Rachel Monroe</span></div>
+    <div class="footer-item"><span>💗</span><span>+3.000 Mujeres Ayudadas</span></div>
+  </div>
+
+</div><!-- /card -->
+</div><!-- /wrapper -->
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────
+const answers = {};
+let currentQ = 0;
+
+// ── START ──────────────────────────────────────────────────────
+function startQuiz() {
+  document.getElementById('progressWrap').style.display = 'block';
+  showScreen('screen-1');
+  currentQ = 1;
+  updateProgress(1);
+}
+
+// ── OPTION SELECT ──────────────────────────────────────────────
+function selectOption(el, q) {
+  const container = el.parentElement;
+  container.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[q] = el.dataset.val;
+  document.getElementById('btn-' + q).disabled = false;
+}
+
+// ── NEXT QUESTION ──────────────────────────────────────────────
+function nextQuestion(q) {
+  currentQ = q;
+  showScreen('screen-' + q);
+  updateProgress(q);
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────
+function updateProgress(q) {
+  const pct = Math.round((q / 7) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = q + ' de 7';
+}
+
+// ── LOADING ──────────────────────────────────────────────────
+function showLoading() {
+  showScreen('screen-loading');
+  document.getElementById('progressWrap').style.display = 'none';
+  const items = ['ai1','ai2','ai3','ai4'];
+  items.forEach((id, i) => {
+    setTimeout(() => {
+      document.getElementById(id).classList.add('done');
+      document.getElementById(id).querySelector('.icon').textContent = '✅';
+    }, 900 + i * 700);
+  });
+  setTimeout(() => buildResult(), 4200);
+}
+
+// ── RESULT LOGIC ──────────────────────────────────────────────
+function buildResult() {
+
+  // ── BLOCKED TRIGGER ──
+  const q3 = answers[3]; const q7 = answers[7];
+  let triggerName, triggerText;
+
+  if (q7 === 'hero' || q3 === 'C') {
+    triggerName = 'El Gatillo del Héroe';
+    triggerText = 'No estás activando su necesidad de sentirse necesario y capaz. Los hombres se vinculan a través del propósito — cuando una mujer lo hace sentir específicamente capaz y valorado, su devoción surge automáticamente. Este gatillo es tu camino más rápido hacia un cambio visible.';
+  } else if (q7 === 'anchor' || q3 === 'D') {
+    triggerName = 'El Ancla Emocional';
+    triggerText = 'Tu conexión carece de recuerdos emocionales profundos y vívidos que asocien permanentemente sus mejores sentimientos contigo. Sin estas anclas, la relación se mantiene superficial — sin importar cuánto tiempo pasen juntos.';
+  } else if (q7 === 'scarcity') {
+    triggerName = 'El Efecto Escasez + La Reversión de Validación';
+    triggerText = 'Puede que estés demasiado disponible o buscando su aprobación de maneras que reducen tu valor percibido. En el momento en que dejes de necesitar su validación y construyas una vida demasiado plena para girar en torno a él — la dinámica cambia completamente.';
+  } else {
+    triggerName = 'El Hilo de Visión Compartida';
+    triggerText = 'Él no ha sido invitado a imaginarse un futuro contigo — no a través de presión, sino a través de la co-creación natural de una visión compartida. Los hombres se comprometen con futuros que ayudan a construir. Este gatillo crea esa invitación.';
+  }
+
+  // ── RELATIONSHIP PROFILE ──
+  const q1 = answers[1]; const q4 = answers[4]; const q6 = answers[6];
+  let profileName, profileText;
+
+  const anxious = (q1 === 'C' || q4 === 'D' || q6 === 'D');
+  const secure  = (q1 === 'A' || q1 === 'D') && (q4 === 'A' || q4 === 'B');
+  const avoidant_self = q1 === 'D' && q4 === 'A';
+
+  if (avoidant_self) {
+    profileName = 'La Independiente';
+    profileText = 'Tienes una vida fuerte y plena con genuina autosuficiencia. Tu desafío es crear profundidad emocional e invitarlo a entrar — no por necesidad, sino por conexión intencional. El Ancla Emocional y el Hilo de Visión Compartida son tus puntos de apalancamiento.';
+  } else if (secure) {
+    profileName = 'La Compañera Equilibrada';
+    profileText = 'Tienes seguridad natural y autoconciencia. No eres desesperada — pero puede que te falte el lenguaje psicológico específico al que responde el cerebro masculino. El Gatillo del Héroe y el Acelerador de Compromiso crearán el cambio para el que estás lista.';
+  } else if (anxious) {
+    profileName = 'La Que Da Demasiado';
+    profileText = 'Das generosamente y sientes profundamente — pero tu inversión emocional puede estar superando la de él. Esto crea un desequilibrio que la ansiedad amplifica. La Reversión de Validación y el Efecto Escasez recalibrarán la dinámica sin juegos.';
+  } else {
+    profileName = 'La Que Espera Ser Elegida';
+    profileText = 'Eres paciente, cálida y disponible — pero puede que estés esperando que él se ponga al día en lugar de crear activamente las condiciones para el compromiso. El sistema completo de 7 gatillos te da el mapa para pasar de esperar a ser elegida.';
+  }
+
+  // ── HIS ATTACHMENT PATTERN ──
+  const q2 = answers[2]; const q5 = answers[5];
+  let hisName, hisText;
+
+  if (q2 === 'A' && q6 !== 'C') {
+    hisName = 'Probablemente Ansioso-Seguro';
+    hisText = 'Busca cuando te alejas y está abierto al futuro — señales de un hombre que quiere cercanía pero necesita sentirse elegido. Tus mejores gatillos: Gatillo del Héroe y Ancla Emocional. Dale momentos específicos para sentirse significativo.';
+  } else if (q2 === 'B' || q6 === 'C') {
+    hisName = 'Probablemente Evitativo';
+    hisText = 'Valora la independencia y se aleja cuando la cercanía aumenta. La presión y la sobresisponibilidad lo alejan más. Tus mejores gatillos: Bucle del Misterio y Efecto Escasez. Crea espacio — deja que descubra que te extraña.';
+  } else if (q2 === 'C') {
+    hisName = 'Probablemente Desorganizado / Temeroso';
+    hisText = 'Su comportamiento caliente-frío sugiere miedo tanto a la cercanía como al abandono. La consistencia, la calidez y la seguridad emocional son lo que gradualmente lo abre. Tus mejores gatillos: Ancla Emocional y Reversión de Validación.';
+  } else {
+    hisName = 'Probablemente Seguro — Necesita Activación';
+    hisText = 'Tiene la capacidad para el compromiso — los gatillos simplemente no han sido activados aún. Esta es la mejor situación posible. Los 7 gatillos aplican, con el Gatillo del Héroe y el Hilo de Visión Compartida creando los resultados más rápidos.';
+  }
+
+  // ── POPULATE ──
+  document.getElementById('result-title').textContent = profileName;
+  document.getElementById('result-tag').textContent = '🔍 3 Perspectivas Desbloqueadas';
+  document.getElementById('trigger-name').textContent = triggerName;
+  document.getElementById('trigger-text').textContent = triggerText;
+  document.getElementById('profile-name').textContent = profileName;
+  document.getElementById('profile-text').textContent = profileText;
+  document.getElementById('his-name').textContent = hisName;
+  document.getElementById('his-text').textContent = hisText;
+
+  showScreen('screen-result');
+  document.getElementById('progressWrap').style.display = 'none';
+}
+
+// ── CTA ──────────────────────────────────────────────────────
+function goToCheckout() {
+  // 👇 SUBSTITUA pelo link do seu checkout (Hotmart, Digistore, etc.)
+  window.location.href = 'https://SEU-LINK-DE-CHECKOUT-AQUI';
+}
+
+// ── SCREEN SWITCH ────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
