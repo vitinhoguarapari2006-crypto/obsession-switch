@@ -4,6 +4,26 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>El Interruptor de la Obsesión — Quiz de Relación</title>
+
+<!-- ── META PIXEL ── -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1592478898690613');
+fbq('track', 'PageView');
+</script>
+<noscript>
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1592478898690613&ev=PageView&noscript=1"/>
+</noscript>
+<!-- ── FIM META PIXEL ── -->
+
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -745,6 +765,8 @@ let currentQ = 0;
 
 // ── START ──────────────────────────────────────────────────────
 function startQuiz() {
+  // Pixel: usuária iniciou o quiz
+  fbq('track', 'ViewContent', { content_name: 'Quiz Started' });
   document.getElementById('progressWrap').style.display = 'block';
   showScreen('screen-1');
   currentQ = 1;
@@ -859,13 +881,21 @@ function buildResult() {
   document.getElementById('his-name').textContent = hisName;
   document.getElementById('his-text').textContent = hisText;
 
+  // Pixel: quiz completo = Lead
+  fbq('track', 'Lead', { content_name: 'Quiz Completed' });
+
   showScreen('screen-result');
   document.getElementById('progressWrap').style.display = 'none';
 }
 
 // ── CTA ──────────────────────────────────────────────────────
 function goToCheckout() {
-  // 👇 SUBSTITUA pelo link do seu checkout (Hotmart, Digistore, etc.)
+  // Pixel: clicou no botão de compra
+  fbq('track', 'InitiateCheckout', {
+    value: 9.00,
+    currency: 'USD',
+    content_name: 'El Interruptor de la Obsesion'
+  });
   window.location.href = 'https://pay.kiwify.com/718rUtp';
 }
 
